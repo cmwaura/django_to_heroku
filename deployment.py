@@ -117,7 +117,9 @@ class Settings(BaseFile):
 		security_dict["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
 
 		return security_dict
-
+	def json_security(self, security_dict):
+		import json
+		json_sec = json.dumps(security_dict)
 	
 	def dict_to_var(self, security_dict):
 
