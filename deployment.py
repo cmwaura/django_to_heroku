@@ -106,9 +106,9 @@ class Settings(BaseFile):
 		return static_loc.lower()
 
 	def amazon_storage_var(self, AWS_STORAGE_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY):
-
 		security_dict = {}	
 		AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
 		security_dict["AWS_S3_CUSTOM_DOMAIN"] = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 		security_dict["STATIC_URL"] = "http://%s/" % AWS_S3_CUSTOM_DOMAIN
 		security_dict["STATICFILES_STORAGE"] = 'storages.backends.s3boto.S3BotoStorage'
@@ -117,21 +117,37 @@ class Settings(BaseFile):
 		security_dict["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
 
 		return security_dict
+
 	def json_security(self, security_dict):
 		import json
 		json_sec = json.dumps(security_dict)
-	
-	def dict_to_var(self, security_dict):
+		return json_sec
 
-		for key, val in security_dict.items():
-			exec(key + "=val")
-	# def django_white()
+	
+	def dict_to_var(self, security_dict, directory_tree):
+		settings_file = codecs.open(directory_tree, 'a')
+		for key in security_dict:
+			if key != "STATICFILES_STORAGE" and key !="STATIC_URL" :
+				value ='os.environ.get('+"'"+key+"'"+')'
+				settings_file.write(key +" = "+ value + '\n')
+			elif key == "STATICFILES_STORAGE": 
+				value = '{0}{1}{0}'.format("'", security_dict["STATICFILES_STORAGE"])
+				settings_file.write(key + " = " + value)
+			elif key == "STATIC_URL":
+				value = '{0}{1}{0}{2}'.format("'", "http://%s/","% AWS_S3_CUSTOM_DOMAIN")
+				settings_file.write(key+ " = " + value+ "\n")
+			
+		settings_file.close()
+
+
+
 
 
 s = Settings("example/settings.py")
 security_dict = s.amazon_storage_var("me", 123, 456)
 print security_dict
-print s.dict_to_var(security_dict)
+print s.dict_to_var(security_dict, "example/settings.py")
+print s.json_security(security_dict)
 
 # pro = ProcFile()
 # pro.open_text_file()
