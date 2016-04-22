@@ -122,7 +122,10 @@ class Settings(BaseFile):
 		import json
 		json_sec = json.dumps(security_dict)
 		return json_sec
-
+	def save_json_security(self, json_security):
+		filename = codecs.open("security_cred.json", "w")
+		filename.write(json_security)
+		filename.close()
 	
 	def dict_to_var(self, security_dict, directory_tree):
 		settings_file = codecs.open(directory_tree, 'a')
@@ -136,8 +139,12 @@ class Settings(BaseFile):
 			elif key == "STATIC_URL":
 				value = '{0}{1}{0}{2}'.format("'", "http://%s/","% AWS_S3_CUSTOM_DOMAIN")
 				settings_file.write(key+ " = " + value+ "\n")
-			
-		settings_file.close()
+			else:
+				print "this error should not occur. Please turn back"			
+			settings_file.close()
+
+	
+
 
 
 
@@ -145,9 +152,10 @@ class Settings(BaseFile):
 
 s = Settings("example/settings.py")
 security_dict = s.amazon_storage_var("me", 123, 456)
-print security_dict
-print s.dict_to_var(security_dict, "example/settings.py")
-print s.json_security(security_dict)
+# print security_dict
+# print s.dict_to_var(security_dict, "example/settings.py")
+json_security = s.json_security(security_dict)
+s.save_json_security(json_security)
 
 # pro = ProcFile()
 # pro.open_text_file()
