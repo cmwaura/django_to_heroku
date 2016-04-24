@@ -29,19 +29,39 @@ import os
 import codecs
 
 class BaseFile(object):
+	'''
+	This is the base file that will contain more of the common elements that other classes can and will 
+	inherit from. The main purpose of this specific module is just to be the parent module.
+	'''
 	def __init__(self, filename):
+		'''
+		initializes the file name where it is located via filename and the path
+		'''
 		self.path =  os.path.dirname(os.path.abspath("__file__"))
 		self.text_file = os.path.join(self.path, filename)
 	def open_text_file(self):
+		'''
+		opens the text file for writing.
+		'''
 		self.text_file = codecs.open(self.text_file, "w")
 		return self.text_file
 
 
 class WsgiFile(object):
-	def __init__(self, filename, text_file="wsgi_text.txt"):
-		# self.command = phrase
+	'''
+	This is specific for the WSGI file in the Django structure. At the end of this process, all the details 
+	required on the wsgi file will be transfered from the wsgi_text file
+	'''
+	def __init__(self, directory_tree, text_file="wsgi_text.txt"):
+		'''
+		Initializing the actual wsgi.py file in the django directory as well as the wsgi_text.txt file 
+		which contains the actual commands needed to deploy your project.
+		directory_tree = where the file is stored. This for instance if your file lives one folder down,
+		it would be "folder/wsgi.py"
+		text_file = wsgi_text.txt, text file that is used for comparison
+		'''
 		self.path =  os.path.dirname(os.path.abspath("__file__"))
-		self.wsgi_file = os.path.join(self.path, filename)
+		self.wsgi_file = os.path.join(self.path, directory_tree)
 		self.text_file = text_file
 		
 	def open_wsgi_file(self):
@@ -52,16 +72,32 @@ class WsgiFile(object):
 		comp_file = codecs.open(self.text_file).read().split('\n')
 		return comp_file
 	
-	def compare_files(self, file1, file2):		
+	def compare_files(self, file1, file2):	
+		'''
+		this is just an option to compare both files and get all the common objects in the files
+		file1 = the wsgi.py file
+		file2 = wsgi_text.txt
+		'''	
 		same = set(file1).intersection(file2)
 		same.discard('\n')
 		return same
 
 	def contrast_files(self, file1, file2):
+		'''
+		this is just an option to contrast both files and get all the difference objects in the files
+		file1 = the wsgi.py file
+		file2 = wsgi_text.txt
+		return : difference between both files
+		'''
 		difference = set(file2).difference(file1)		
 		return difference
 
 	def write_to_wsgi(self, difference):
+		'''
+		takes in the difference between the files and writes it to the wsgi.py file. This ensures that 
+		the wsgi deployment settings that lived in wsgi_text is now added to wsgi.py
+		'''
+
 		transfer = open(self.wsgi_file, 'a')
 		linestr = ''
 		if len(difference) > 0:			
@@ -71,15 +107,25 @@ class WsgiFile(object):
 
 class ProcFile(BaseFile):
 	def __init__(self, **kwargs):
+		'''
+		initializes a filename called Procfile
+		'''
 		super(ProcFile, self).__init__(filename="Procfile", **kwargs)
 	
-	def write_to_file(self, directory, astring):
-		cap_log = "web: gunicorn " + directory+".wsgi --log-file -"
+	def write_to_file(self, wsgi_directory, astring):
+		'''
+		takes in the wsgi_directory and writes the Procfile statement fr gunicorn
+		it takes in the astring that is either nolog or log
+		wsgi_directory:directory where your wsgi file lives
+		astring: "log or nolog" for the option of logging
+		'''
+
+		cap_log = "web: gunicorn " + wsgi_directory+".wsgi --log-file -"
 		if astring:
 			if astring == "log":
 				self.text_file.write(cap_log)
 			elif astring == "nolog":
-				self.text_file.write("web: gunicorn " + directory+".wsgi")
+				self.text_file.write("web: gunicorn " + wsgi_directory+".wsgi")
 			else:
 				print "there are only two options log/nolog"
 		else:
@@ -144,15 +190,29 @@ class Settings(BaseFile):
 				print "this error should not occur. Please turn back"			
 		settings_file.close()
 
+class GitIgnore(BaseFile):
+	def __init__(self, **kwargs):
+		super(GitIgnore, self).__init__(filename=".gitignore", **kwargs)
+
+	def write_to_file(self):
+		filelist = ['security_cred.json', 'wsgi_text.txt']
+		for name in filelist:
+			self.text_file.write(name)
+		self.text_file.close()
+
+
 class HerokuConfig(object):
+
 	def __init__(self, command="heroku config:set"):
-		self.command = command		
+		self.command = command
+
+
 	def amazon(self, amazon_storage_var):
 		for key, value in  amazon_storage_var.iteritems():
-			print key, value
+			print self.command, key + "=" + str(value)
 
 
-
+#------------------testing---------------------------#
 
 
 
