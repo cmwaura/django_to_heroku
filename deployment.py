@@ -18,10 +18,9 @@ To summarize all the hooplah.
 WSGI.py:
 1) add the relevant wsgi line for deployment
 2) change the relative settings and this includes but is not limited to 
-	1)DEBUG = False
-	2)add staticfile storage keys for amazon web services
-	3) save the secret keys as a JSON file and add it to the gitignore
-	4) Add email settings incase of any marketing to be done and save as a JSON.
+	1)add staticfile storage keys for amazon web services
+	2) save the secret keys as a JSON file and add it to the gitignore
+	
 3) add the secret information to heroku config menu and  link the information to the settings file.
 
 '''
@@ -208,7 +207,7 @@ class GitIgnore(BaseFile):
 		return self.text_file
 
 	def write_to_file(self):
-		filelist = ['security_cred.json', 'wsgi_text.txt']
+		filelist = ['deployment.py', 'security_cred.json', 'wsgi_text.txt']
 		for name in filelist:
 			self.text_file.write(name + "\n")
 		self.text_file.close()
@@ -222,7 +221,10 @@ class HerokuConfig(object):
 
 	def amazon(self, amazon_storage_var):
 		for key, value in  amazon_storage_var.iteritems():
-			print self.command, key + "=" + str(value)
+			print self.command ,key + "=" + str(value)
+			os.system(self.command + ' '+key + "=" + str(value))
+
+
 
 
 #------------------testing---------------------------#
@@ -233,9 +235,9 @@ g = GitIgnore()
 g.open_text_file()
 g.write_to_file()
 s = Settings("example/settings.py")
-security_dict = s.djangowhite()
-# heroku = HerokuConfig()
-# print heroku.amazon(security_dict)
+security_dict = s.djangowhitenoise()
+heroku = HerokuConfig()
+heroku.amazon(security_dict)
 # print security_dict
 print "running"
 s.dict_to_var(security_dict, "example/settings.py")
