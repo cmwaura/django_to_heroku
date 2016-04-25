@@ -151,6 +151,11 @@ class Settings(BaseFile):
 		'''
 		return static_loc.lower()
 
+	def djangowhitenoise(self):
+		security_dict={}
+		security_dict['STATICFILES_STORAGE'] = 'whitenoise.django.GzipManifestStaticFilesStorage'
+		return security_dict
+	
 	def amazon_storage_var(self, AWS_STORAGE_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY):
 		security_dict = {}	
 		AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
@@ -180,7 +185,8 @@ class Settings(BaseFile):
 			if key != "STATICFILES_STORAGE" and key !="STATIC_URL" :
 				value ='os.environ.get('+"'"+key+"'"+')'
 				settings_file.write(key +" = "+ value + '\n')
-			elif key == "STATICFILES_STORAGE": 
+			elif key == "STATICFILES_STORAGE":
+				settings_file.write("\n")
 				value = '{0}{1}{0}'.format("'", security_dict["STATICFILES_STORAGE"])
 				settings_file.write(key + " = " + value)
 			elif key == "STATIC_URL":
@@ -194,10 +200,17 @@ class GitIgnore(BaseFile):
 	def __init__(self, **kwargs):
 		super(GitIgnore, self).__init__(filename=".gitignore", **kwargs)
 
+	def open_text_file(self):
+		'''
+		opens the text file for writing.
+		'''
+		self.text_file = codecs.open(self.text_file, "a")
+		return self.text_file
+
 	def write_to_file(self):
 		filelist = ['security_cred.json', 'wsgi_text.txt']
 		for name in filelist:
-			self.text_file.write(name)
+			self.text_file.write(name + "\n")
 		self.text_file.close()
 
 
@@ -216,16 +229,19 @@ class HerokuConfig(object):
 
 
 
-
-
+g = GitIgnore()
+g.open_text_file()
+g.write_to_file()
 s = Settings("example/settings.py")
-security_dict = s.amazon_storage_var("me", 123, 456)
-heroku = HerokuConfig()
-print heroku.amazon(security_dict)
+security_dict = s.djangowhite()
+# heroku = HerokuConfig()
+# print heroku.amazon(security_dict)
 # print security_dict
-# print s.dict_to_var(security_dict, "example/settings.py")
+print "running"
+s.dict_to_var(security_dict, "example/settings.py")
+print "ran"
 # json_security = s.json_security(security_dict)
-# s.save_json_security(json_security)
+# s.save_json_security(json_securityg
 
 # pro = ProcFile()
 # pro.open_text_file()
